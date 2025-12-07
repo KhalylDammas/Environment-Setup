@@ -72,29 +72,13 @@ WSL 2 uses virtualization. If virtualization is off, WSL 2 and Docker will fail 
 
 ### 1) Verify virtualization is enabled (Windows)
 
-#### Option A (fastest): Task Manager
+#### Task Manager
 
 1. Press `Ctrl + Shift + Esc`.
 2. Go to **Performance** → **CPU**.
 3. Look for **Virtualization: Enabled**.
 
-#### Option B (PowerShell): `systeminfo`
-
-Open **PowerShell as Administrator** and run:
-
-```powershell
-systeminfo.exe
-```
-
-Look for a block like:
-
-```text
-Hyper-V Requirements:
-    VM Monitor Mode Extensions: Yes
-    Virtualization Enabled In Firmware: Yes
-    Second Level Address Translation: Yes
-    Data Execution Prevention Available: Yes
-```
+![Virtualization Status](assets/Task_Manager_virtualization_status.png)
 
 ### 2) Enable virtualization in UEFI/BIOS (high level)
 
@@ -122,41 +106,6 @@ Microsoft’s official “Enable virtualization” guide includes these UEFI ent
 * Dell: “How to enable or disable hardware virtualization on Dell systems.” ([Dell][5])
 * Lenovo: “How to enable Virtualization Technology on Lenovo computers.” ([Lenovo Support][6])
 * ASUS: “How to set VT (Virtualization Technology) in BIOS and UEFI.” ([Asus][7])
-
-### 3) Enable required Windows features (if needed)
-
-WSL 2 relies on Windows optional components such as **Virtual Machine Platform** and **Windows Subsystem for Linux**. Microsoft’s troubleshooting docs reference enabling these features when WSL fails. ([Microsoft Learn][8])
-
-Open **PowerShell as Administrator**:
-
-```powershell
-dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-```
-
-Then restart Windows:
-
-```powershell
-shutdown.exe /r /t 0
-```
-
-### Verify
-
-After reboot, open PowerShell (non-admin is fine) and run:
-
-```powershell
-systeminfo.exe
-```
-
-Expected (example):
-
-```text
-Virtualization Enabled In Firmware: Yes
-```
-
-### If something goes wrong
-
-* Microsoft’s “Troubleshooting WSL” guide covers common virtualization and feature issues (including error codes like `0x80370102`). ([Microsoft Learn][8])
 
 ---
 
