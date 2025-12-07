@@ -146,13 +146,16 @@ wsl --version
 wsl --status
 ```
 
-Expected (example):
-
-```text
-WSL version: 2.x.x
-Kernel version: 5.15.x.x
-WSLg version: 1.x.x
+Expected:
+```powershell
+wsl --version
 ```
+![Expected wsl version output](assets/wsl_version_expected_output.png)
+
+```powershell
+wsl --status
+```
+![Expected wsl version output](assets/wsl_status_expected_output.png)
 
 If `wsl --version` is not recognized, your WSL may be older; ensure Windows Update is current and re-run `wsl --update`. See Microsoft’s WSL troubleshooting page for update guidance. ([Microsoft Learn][8])
 
@@ -171,6 +174,10 @@ Open PowerShell and list available distros:
 ```powershell
 wsl --list --online
 ```
+
+Expected:
+
+![Expected wsl list online output](assets/wsl_--list_--online.png)
 
 Install Ubuntu 24.04 LTS (or the newest Ubuntu LTS shown in your list):
 
