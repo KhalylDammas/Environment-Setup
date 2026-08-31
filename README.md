@@ -1,6 +1,8 @@
 # Windows 11 Developer Setup with WSL 2 and Ubuntu
 
-This guide sets up a clean Windows 11 + WSL 2 + Ubuntu workflow for development and data work. You will install WSL 2, an Ubuntu LTS distro, VS Code with Remote - WSL, core CLI tooling, GitHub CLI, a safer `zsh` setup, Python with `venv`, and Docker Desktop with WSL integration. WSL lets you run a Linux environment directly alongside Windows, without a separate VM UI. ([Microsoft Learn][1])
+This guide sets up a clean Windows 11 + WSL 2 + Ubuntu workflow for development and data work. You will install WSL 2, an Ubuntu LTS distro, VS Code with the WSL extension, core CLI tooling, GitHub CLI, a safer `zsh` setup, Python with `venv`, and Docker Desktop with WSL integration. WSL lets you run a Linux environment directly alongside Windows, without a separate VM UI. ([Microsoft Learn][1])
+
+> **Baseline (August 31, 2026):** This guide uses Ubuntu 26.04 LTS (Resolute Raccoon), whose default Python is 3.14. The distro identifier available on your PC is authoritative—always check `wsl --list --online` before installing. ([Ubuntu release notes][20])
 
 **Who is this for**
 
@@ -11,7 +13,7 @@ This guide sets up a clean Windows 11 + WSL 2 + Ubuntu workflow for development 
 
 * WSL 2 + Ubuntu LTS (Linux dev environment)
 * Google Chrome (default browser)
-* Visual Studio Code + Remote - WSL
+* Visual Studio Code + WSL extension
 * Core Ubuntu CLI tools (git, build tools, curl, etc.)
 * GitHub CLI (`gh`)
 * `zsh` + Oh My Zsh (with minimal, reversible customization)
@@ -24,17 +26,16 @@ This guide sets up a clean Windows 11 + WSL 2 + Ubuntu workflow for development 
 * [Check Virtualization (and Enable if Needed)](#check-virtualization-and-enable-if-needed)
 * [Install WSL 2](#install-wsl-2)
 * [Install Ubuntu (First Launch Included)](#install-ubuntu-first-launch-included)
-* [Make Chrome Your Default (and Connect from WSL)](#make-chrome-your-default-and-connect-from-wsl)
+* [Make Chrome Your Default (and Open Links from WSL)](#make-chrome-your-default-and-open-links-from-wsl)
 * [Install Visual Studio Code](#install-visual-studio-code)
 
-  * [Connect VS Code to Ubuntu (Remote - WSL)](#connect-vs-code-to-ubuntu-remote---wsl)
+  * [Connect VS Code to Ubuntu (WSL)](#connect-vs-code-to-ubuntu-wsl)
   * [Recommended VS Code Extensions](#recommended-vs-code-extensions)
 * [Essential Command-Line Tools](#essential-command-line-tools)
 * [Install GitHub CLI (gh)](#install-github-cli-gh)
 * [Install Oh My Zsh (and Make zsh Your Default)](#install-oh-my-zsh-and-make-zsh-your-default)
-* [Link Ubuntu to Your Windows Default Browser](#link-ubuntu-to-your-windows-default-browser)
 * [Install Python 3 and venv](#install-python-3-and-venv)
-* [Install Docker (WSL 2 Backend)](#install-docker-wsl-2-backend)
+* [Install Docker Desktop (WSL 2 Backend)](#install-docker-desktop-wsl-2-backend)
 * [Post-Install Verification (Run These Now)](#post-install-verification-run-these-now)
 * [Troubleshooting & Common Pitfalls](#troubleshooting--common-pitfalls)
 * [Uninstall / Cleanup](#uninstall--cleanup)
@@ -54,7 +55,7 @@ This guide sets up a clean Windows 11 + WSL 2 + Ubuntu workflow for development 
 ### What you will have at the end
 
 * Ubuntu LTS running on WSL 2.
-* VS Code editing inside Ubuntu via Remote - WSL.
+* VS Code editing inside Ubuntu via the WSL extension.
 * Git + build tools inside Ubuntu.
 * GitHub CLI authenticated to your GitHub account.
 * Python virtual environments working cleanly.
@@ -179,20 +180,20 @@ Expected:
 
 ![Expected wsl list online output](assets/wsl_--list_--online.png)
 
-Install Ubuntu 24.04 LTS (or the newest Ubuntu LTS shown in your list):
+Install Ubuntu 26.04 LTS (or the newest Ubuntu LTS shown in your list). The identifier in `wsl --list --online` is authoritative:
 
 ```powershell
-wsl --install -d Ubuntu-24.04
+wsl --install -d Ubuntu-26.04
 ```
 
 If the install appears stuck at 0%, Microsoft documents using `--web-download` as a workaround. ([Microsoft Learn][9])
 
 ### 2) First launch: create your Linux user
 
-Launch Ubuntu from the Start menu (search “Ubuntu 24.04 LTS”), or run:
+Launch Ubuntu from the Start menu (search “Ubuntu 26.04 LTS”), or run:
 
 ```powershell
-wsl -d Ubuntu-24.04
+wsl -d Ubuntu-26.04
 ```
 
 On first launch, Ubuntu will ask you to create:
@@ -237,9 +238,9 @@ Expected (example):
 
 ```text
 Distributor ID: Ubuntu
-Description:    Ubuntu 24.04 LTS
-Release:        24.04
-Codename:       noble
+Description:    Ubuntu 26.04 LTS
+Release:        26.04
+Codename:       resolute
 ```
 
 Also verify WSL version from Windows PowerShell:
@@ -252,14 +253,14 @@ Expected (example):
 
 ```text
   NAME            STATE           VERSION
-* Ubuntu-24.04    Running         2
+* Ubuntu-26.04    Running         2
 ```
 
 Microsoft documents using `wsl.exe --list --verbose` (`wsl -l -v`) to confirm distro versions. ([Microsoft Learn][9])
 
 ---
 
-## Make Chrome Your Default (and Connect from WSL)
+## Make Chrome Your Default (and Open Links from WSL)
 
 ### Why this matters
 
@@ -277,14 +278,14 @@ Download and install Google Chrome from the official site:
 2. Select **Google Chrome**.
 3. Choose **Set default** (or set Chrome for `HTTP` and `HTTPS`).
 
-Microsoft documents changing default apps in Windows Settings. ([Microsoft Support][4])
+Microsoft documents changing default apps in Windows Settings. ([Microsoft Support][21])
 
-### 3) Quick WSL link opening (temporary)
+### 3) Open a link from Ubuntu
 
-Even before configuring `xdg-open`, you can open a URL from Ubuntu using Windows interop:
+`wslu` and `wslview` are archived and no longer maintained. Do not install them or override `xdg-open`; use Windows interop when you need to open a URL from Ubuntu:
 
 ```bash
-powershell.exe -NoProfile -Command "Start-Process https://example.com"
+powershell.exe -NoProfile -Command "Start-Process 'https://example.com'"
 ```
 
 WSL can run Windows executables directly from Linux (interop). ([Microsoft Learn][12])
@@ -294,7 +295,7 @@ WSL can run Windows executables directly from Linux (interop). ([Microsoft Learn
 In Ubuntu:
 
 ```bash
-powershell.exe -NoProfile -Command "Start-Process https://example.com"
+powershell.exe -NoProfile -Command "Start-Process 'https://example.com'"
 ```
 
 Expected result: your default Windows browser opens the page.
@@ -305,7 +306,7 @@ Expected result: your default Windows browser opens the page.
 
 ### Why this matters
 
-VS Code + Remote - WSL gives you Windows UI with Linux tooling, without copying projects back and forth. Microsoft’s WSL environment guide explicitly calls out opening a WSL project with `code .`. ([Microsoft Learn][3])
+VS Code with the WSL extension gives you Windows UI with Linux tooling, without copying projects back and forth. Microsoft’s WSL environment guide explicitly calls out opening a WSL project with `code .`. ([Microsoft Learn][3])
 
 ### 1) Install VS Code on Windows
 
@@ -334,10 +335,10 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 x64
 ```
 
-### Connect VS Code to Ubuntu (Remote - WSL)
+### Connect VS Code to Ubuntu (WSL)
 
 1. Open VS Code on Windows.
-2. Install the **Remote - WSL** extension (see next section).
+2. Install the **WSL** extension (extension ID: `ms-vscode-remote.remote-wsl`; see next section).
 3. Open Ubuntu (WSL) and go to your home directory:
 
 ```bash
@@ -361,7 +362,7 @@ If this is your first time, VS Code will install a small server component inside
 
 #### Verify the remote connection
 
-In VS Code, look for the bottom-left indicator showing **WSL: Ubuntu-24.04** (or similar). Then in the integrated terminal inside VS Code, run:
+In VS Code, look for the bottom-left indicator showing **WSL: Ubuntu-26.04** (or the distro you installed). Then in the integrated terminal inside VS Code, run:
 
 ```bash
 pwd
@@ -383,7 +384,7 @@ code --version
 
 Required for this guide:
 
-* Remote - WSL: [https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
+* WSL: [https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
 
 Recommended (common dev/data stack):
 
@@ -393,7 +394,9 @@ Recommended (common dev/data stack):
 * GitLens: [https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)
 * EditorConfig: [https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig](https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig)
 * YAML: [https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-* Docker: [https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker)
+* Container Tools: [https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers)
+
+Container Tools replaces the former Docker extension’s language-service, container-management, and debugging functionality. ([Visual Studio Marketplace][22])
 
 Optional nice-to-haves:
 
@@ -544,10 +547,10 @@ curl -fsSL -o omz-install.sh https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/m
 less omz-install.sh
 ```
 
-If it looks reasonable, run it:
+If it looks reasonable, run it unattended. This keeps the later shell change explicit:
 
 ```bash
-sh omz-install.sh
+sh omz-install.sh --unattended
 rm -f omz-install.sh
 ```
 
@@ -587,7 +590,7 @@ exec zsh
 ### 5) Make `zsh` your default shell
 
 ```bash
-chsh -s /usr/bin/zsh
+chsh -s "$(command -v zsh)"
 ```
 
 Close the Ubuntu terminal and reopen it.
@@ -603,7 +606,7 @@ Expected (example):
 
 ```text
 zsh 5.9 (x86_64-ubuntu-linux-gnu)
-/usr/bin/zsh
+<path-to-zsh>
 ```
 
 ### Revert (important)
@@ -619,68 +622,11 @@ Then open a new terminal.
 
 ---
 
-## Link Ubuntu to Your Windows Default Browser
-
-### Why this matters
-
-Many CLI tools open docs and auth links. You want `xdg-open` inside Ubuntu to open in your Windows default browser.
-
-### 1) Install `wslview` (via `wslu`)
-
-`wslu` provides `wslview`, described as a tool to open links in the default Windows browser from WSL. ([wslu.wedotstud.io][16])
-
-```bash
-sudo apt update
-sudo apt install -y wslu
-```
-
-### 2) Route `xdg-open` to `wslview`
-
-Create a small wrapper that takes precedence in your PATH.
-
-Path: `/usr/local/bin/xdg-open`
-
-```bash
-sudo tee /usr/local/bin/xdg-open > /dev/null <<'EOF'
-#!/usr/bin/env sh
-exec wslview "$@"
-EOF
-```
-
-```bash
-sudo chmod +x /usr/local/bin/xdg-open
-```
-
-### 3) Set a default browser command (optional but helpful)
-
-Path: `~/.zshrc`
-
-```text
-export BROWSER="wslview"
-```
-
-Reload:
-
-```bash
-exec zsh
-```
-
-### Verify
-
-```bash
-wslview https://example.com
-xdg-open https://example.com
-```
-
-Expected result: the link opens in your **Windows default browser**.
-
----
-
 ## Install Python 3 and venv
 
 ### Why this matters
 
-Python virtual environments isolate dependencies per project. Python’s `venv` module creates lightweight environments with their own site directories, separate from the base interpreter. ([Python documentation][17])
+Python virtual environments isolate dependencies per project. Python’s `venv` module creates lightweight environments with their own site directories, separate from the base interpreter. ([Python documentation][16])
 
 ### 1) Install Python + pip + venv (Ubuntu)
 
@@ -688,6 +634,8 @@ Python virtual environments isolate dependencies per project. Python’s `venv` 
 sudo apt update
 sudo apt install -y python3 python3-pip python3-venv
 ```
+
+Ubuntu 26.04 LTS supplies Python 3.14. Do not hardcode a specific `pip` version: it updates independently. ([Ubuntu release notes][20])
 
 ### 2) Create and use a virtual environment
 
@@ -746,18 +694,21 @@ python -m pip freeze > requirements.txt
 ### Verify
 
 ```bash
-python3 --version
-pip --version
-python3 -m venv --help | head -n 1
+python --version
+python -m pip --version
+which python
+which pip
 ```
 
 Expected (example):
 
 ```text
-Python 3.12.x
-pip 24.x from ... (.venv or /usr/lib/...)
-usage: venv ...
+Python 3.14.x
+/home/<your-linux-username>/code/python-sandbox/.venv/bin/python
+/home/<your-linux-username>/code/python-sandbox/.venv/bin/pip
 ```
+
+The important check is that `python` and `pip` resolve inside `.venv` while it is activated—not their exact release numbers.
 
 Also verify the venv runs Python:
 
@@ -777,11 +728,11 @@ ok
 
 ---
 
-## Install Docker (WSL 2 Backend)
+## Install Docker Desktop (WSL 2 Backend)
 
 ### Why this matters
 
-Docker Desktop on Windows can use the WSL 2 backend and integrate directly with your Ubuntu distro, so `docker` works inside WSL. Microsoft documents Docker Desktop + WSL 2 setup in its WSL containers tutorial. ([Microsoft Learn][2])
+Docker Desktop on Windows can use the WSL 2 backend and integrate directly with your Ubuntu distro, so `docker` works inside WSL. Before installing Docker Desktop, remove any Docker Engine or Docker CLI installed directly inside the WSL distro; mixing them can cause conflicts. Docker requires WSL 2.1.5 or later and recommends the latest WSL. ([Docker Documentation][23])
 
 ### 1) Install Docker Desktop (Windows)
 
@@ -789,16 +740,17 @@ Docker Desktop on Windows can use the WSL 2 backend and integrate directly with 
 
    * [https://www.docker.com/products/docker-desktop/](https://www.docker.com/products/docker-desktop/)
 2. Run the installer.
-3. When asked, ensure **WSL 2** is selected as the backend (recommended).
+3. When asked, select the **WSL 2** backend (recommended).
 
 ### 2) Enable WSL integration for Ubuntu
 
 1. Open **Docker Desktop**.
 2. Go to **Settings**.
-3. Enable **Use the WSL 2 based engine** (Windows-only option). Docker’s settings docs describe this option and warn about security implications for other settings like exposing the daemon. ([Docker Documentation][19])
-4. Go to **Resources** → **WSL Integration**.
-5. Enable integration for **Ubuntu-24.04**.
-6. Apply & Restart if prompted.
+3. Go to **Resources** → **WSL Integration**.
+4. Enable integration for your installed Ubuntu distro (for example, **Ubuntu-26.04**).
+5. Apply & Restart if prompted.
+
+If **Use the WSL 2 based engine** appears under **Settings** → **General**, confirm it is selected. On systems that support WSL 2, Docker Desktop enables it by default and may hide the setting. ([Docker Documentation][23])
 
 ### 3) Use Docker from Ubuntu (WSL)
 
@@ -833,7 +785,7 @@ Hello from Docker!
 This message shows that your installation appears to be working correctly.
 ```
 
-If Docker commands fail inside WSL, re-check Docker Desktop’s WSL integration settings and confirm your distro is WSL 2 (`wsl -l -v`). ([Microsoft Learn][9])
+If Docker commands fail inside WSL, re-check Docker Desktop’s WSL integration settings, confirm your distro is WSL 2 (`wsl -l -v`), and run `wsl --update`. ([Docker Documentation][23])
 
 ---
 
@@ -851,9 +803,8 @@ wsl -l -v
 Expected (example):
 
 ```text
-WSL version: 2.x.x
   NAME            STATE           VERSION
-* Ubuntu-24.04    Running         2
+* Ubuntu-26.04    Running         2
 ```
 
 ### Ubuntu (WSL)
@@ -864,21 +815,20 @@ gh --version
 code --version
 zsh --version
 python3 --version
-pip --version
-python3 -m venv .venv && source .venv/bin/activate && python -c "print('ok')"
+python3 -m venv .venv && source .venv/bin/activate && python -m pip --version && which python && python -c "print('ok')"
 ```
 
 Expected (example):
 
 ```text
 Distributor ID: Ubuntu
-Description:    Ubuntu 24.04 LTS
+Description:    Ubuntu 26.04 LTS
 ...
 gh version 2.xx.x ...
 1.xx.x
 zsh 5.x ...
-Python 3.12.x
-pip 24.x ...
+Python 3.14.x
+.../.venv/bin/pip ...
 ok
 ```
 
@@ -921,21 +871,19 @@ Microsoft documents `wsl.exe --update` as the way to update WSL. ([Microsoft Lea
 ### `code .` fails in Ubuntu
 
 * Open VS Code on Windows once.
-* Ensure Remote - WSL is installed.
+* Ensure the WSL extension is installed.
 * Try again from Ubuntu in a folder you own (e.g., `~/code`).
 * Microsoft’s WSL environment guide shows `code .` usage from a WSL project directory. ([Microsoft Learn][3])
 
 ### Links opened from Ubuntu don’t open in Windows
 
-* Verify `wslview` and your `xdg-open` wrapper:
+* Use Windows interop instead of the archived `wslu` / `wslview` tools:
 
 ```bash
-command -v wslview
-command -v xdg-open
-xdg-open https://example.com
+powershell.exe -NoProfile -Command "Start-Process 'https://example.com'"
 ```
 
-`wslview` is described by `wslu` as a “fake WSL browser” to open links in the default Windows browser. ([wslu.wedotstud.io][16])
+WSL can run Windows executables directly from Linux. ([Microsoft Learn][12])
 
 ### Docker works in Windows but not in Ubuntu (WSL)
 
@@ -947,8 +895,8 @@ wsl -l -v
 
 * In Docker Desktop, confirm:
 
-  * “Use the WSL 2 based engine” is enabled. ([Docker Documentation][19])
-  * WSL Integration is enabled for your Ubuntu distro. ([Microsoft Learn][2])
+  * WSL Integration is enabled for your Ubuntu distro.
+  * WSL is current (`wsl --update`) and your distro is running as version 2. ([Docker Documentation][23])
 
 ---
 
@@ -962,7 +910,7 @@ In PowerShell:
 
 ```powershell
 wsl --shutdown
-wsl --unregister Ubuntu-24.04
+wsl --unregister Ubuntu-26.04
 ```
 
 Verify:
@@ -991,22 +939,25 @@ Microsoft documents enabling/disabling these components as part of WSL troublesh
 
 If you later reinstall WSL, return to [Install WSL 2](#install-wsl-2) and proceed in order.
 
-[1]: https://learn.microsoft.com/en-us/windows/wsl/about?utm_source=chatgpt.com "What is Windows Subsystem for Linux"
-[2]: https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers?utm_source=chatgpt.com "Get started with Docker remote containers on WSL 2"
-[3]: https://learn.microsoft.com/en-us/windows/wsl/setup/environment?utm_source=chatgpt.com "Set up a WSL development environment"
-[4]: https://support.microsoft.com/en-us/windows/enable-virtualization-on-windows-c5578302-6e43-4b4b-a449-8ced115f58e1?utm_source=chatgpt.com "Enable Virtualization on Windows"
-[5]: https://www.dell.com/support/kbdoc/en-us/000195978/how-to-enable-or-disable-hardware-virtualization-on-dell-systems?utm_source=chatgpt.com "How To Enable or Disable Hardware Virtualization on Dell ..."
-[6]: https://support.lenovo.com/us/en/solutions/ht500006-how-to-enable-virtualization-technology-on-lenovo-computers?utm_source=chatgpt.com "How to enable Virtualization Technology on Lenovo PC ..."
-[7]: https://www.asus.com/sa-en/support/faq/1045141/?utm_source=chatgpt.com "How to set VT(Virtualization Technology) in BIOS and ..."
-[8]: https://learn.microsoft.com/en-us/windows/wsl/troubleshooting?utm_source=chatgpt.com "Troubleshooting Windows Subsystem for Linux"
-[9]: https://learn.microsoft.com/en-us/windows/wsl/install?utm_source=chatgpt.com "How to install Linux on Windows with WSL"
-[10]: https://learn.microsoft.com/en-us/windows/wsl/basic-commands?utm_source=chatgpt.com "Basic commands for WSL"
-[11]: https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/?utm_source=chatgpt.com "Install Ubuntu on WSL 2"
-[12]: https://learn.microsoft.com/en-us/windows/wsl/filesystems?utm_source=chatgpt.com "Working across Windows and Linux file systems"
-[13]: https://code.visualstudio.com/docs/remote/troubleshooting?utm_source=chatgpt.com "Remote Development Tips and Tricks"
-[14]: https://raw.githubusercontent.com/cli/cli/trunk/docs/install_linux.md "raw.githubusercontent.com"
-[15]: https://github.com/ohmyzsh/ohmyzsh/wiki?utm_source=chatgpt.com "Home · ohmyzsh/ohmyzsh Wiki"
-[16]: https://wslu.wedotstud.io/wslu/ "wslu | wslu Wiki"
-[17]: https://docs.python.org/3/library/venv.html?utm_source=chatgpt.com "venv — Creation of virtual environments"
-[18]: https://pip.pypa.io/en/stable/topics/configuration/?utm_source=chatgpt.com "Configuration - pip documentation v25.3"
-[19]: https://docs.docker.com/desktop/settings-and-maintenance/settings/?utm_source=chatgpt.com "Change your Docker Desktop settings"
+[1]: https://learn.microsoft.com/windows/wsl/about "What is Windows Subsystem for Linux"
+[2]: https://learn.microsoft.com/windows/wsl/tutorials/wsl-containers "Get started with Docker remote containers on WSL 2"
+[3]: https://learn.microsoft.com/windows/wsl/setup/environment "Set up a WSL development environment"
+[4]: https://support.microsoft.com/windows/enable-virtualization-on-windows-c5578302-6e43-4b4b-a449-8ced115f58e1 "Enable Virtualization on Windows"
+[5]: https://www.dell.com/support/kbdoc/en-us/000195978/how-to-enable-or-disable-hardware-virtualization-on-dell-systems "How To Enable or Disable Hardware Virtualization on Dell systems"
+[6]: https://support.lenovo.com/us/en/solutions/ht500006-how-to-enable-virtualization-technology-on-lenovo-computers "How to enable Virtualization Technology on Lenovo computers"
+[7]: https://www.asus.com/support/faq/1045141/ "How to set VT in BIOS and UEFI"
+[8]: https://learn.microsoft.com/windows/wsl/troubleshooting "Troubleshooting Windows Subsystem for Linux"
+[9]: https://learn.microsoft.com/windows/wsl/install "How to install Linux on Windows with WSL"
+[10]: https://learn.microsoft.com/windows/wsl/basic-commands "Basic commands for WSL"
+[11]: https://documentation.ubuntu.com/wsl/stable/howto/install-ubuntu-wsl2/ "Install Ubuntu on WSL 2"
+[12]: https://learn.microsoft.com/windows/wsl/interop "Run Windows tools from Linux"
+[13]: https://code.visualstudio.com/docs/remote/troubleshooting "Remote Development Tips and Tricks"
+[14]: https://cli.github.com/manual/installation "GitHub CLI installation"
+[15]: https://github.com/ohmyzsh/ohmyzsh/tree/master/tools "Oh My Zsh installer"
+[16]: https://docs.python.org/3/library/venv.html "venv — Creation of virtual environments"
+[18]: https://pip.pypa.io/en/stable/topics/configuration/ "Configuration - pip documentation"
+[20]: https://documentation.ubuntu.com/release-notes/26.04/summary-for-lts-users/ "Ubuntu 26.04 LTS summary"
+[21]: https://support.microsoft.com/windows/change-default-apps-in-windows "Change Default Apps in Windows"
+[22]: https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-containers "Container Tools"
+[23]: https://docs.docker.com/desktop/features/wsl/ "Docker Desktop WSL 2 backend on Windows"
+
